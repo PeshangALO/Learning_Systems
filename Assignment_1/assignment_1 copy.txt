@@ -1,0 +1,123 @@
+import random
+import matplotlib.pyplot as pl
+
+
+class Environment:
+    def __init__(self, c_1, c_2):
+        self.c_1 = c_1
+        self.c_2 = c_2
+
+    def penalty(self, action):
+        if action == 0:
+            if random.random() <= self.c_1:
+                return True
+            else:
+                return False
+        elif action == 1:
+            if random.random() <= self.c_2:
+                return True
+            else:
+                return False
+
+
+class Tsetlin:
+    def __init__(self, n):
+        # n is the number of states per action
+        self.n = n
+
+        # Initial state selected randomly
+        self.state = random.choice([self.n, self.n + 1])
+
+    def reward(self):
+        if self.state <= self.n and self.state > 1:
+            self.state -= 1
+        elif self.state > self.n and self.state < 2 * self.n:
+            self.state += 1
+
+    def penalize(self):
+        if self.state <= self.n:
+            self.state += 1
+        elif self.state > self.n:
+            self.state -= 1
+
+    def makeDecision(self):
+        if self.state <= self.n:
+            return 0
+        else:
+            return 1
+
+
+Number_OF_States = 3
+
+la1 = Tsetlin(Number_OF_States)
+la2 = Tsetlin(Number_OF_States)
+la3 = Tsetlin(Number_OF_States)
+la4 = Tsetlin(Number_OF_States)
+la5 = Tsetlin(Number_OF_States)
+
+la_array =[]
+
+la_array.append(la1)
+la_array.append(la2)
+la_array.append(la3)
+la_array.append(la4)
+la_array.append(la5)
+
+
+def calculate_penalty(Number_Of_Yes):
+    if Number_Of_Yes < 4:
+        M = Number_Of_Yes * 0.2
+        MR = 1 - M
+        return M, MR
+
+    if Number_Of_Yes > 3:
+        M = 0.6 - (Number_Of_Yes - 3) * 0.2
+        MR = 1 - M
+        return M, MR
+
+
+action_count = [0, 0]
+plot_result = ([], [])
+
+for i in range(500):
+    action_array = []
+
+    action1 = la1.makeDecision()
+    action2 = la2.makeDecision()
+    action3 = la3.makeDecision()
+    action4 = la4.makeDecision()
+    action5 = la5.makeDecision()
+
+    action_array.append(action1)
+    action_array.append(action2)
+    action_array.append(action3)
+    action_array.append(action4)
+    action_array.append(action5)
+
+    Number_Of_Yes = (action1+action2+action3+action4+action5)
+
+    plot_result[0].append(i)
+    plot_result[1].append(Number_Of_Yes)
+    print("Nmb of yes: ",Number_Of_Yes)
+
+    M, MR = calculate_penalty(Number_Of_Yes)
+    env = Environment(MR, M)
+
+    for j in range(len(action_array)):
+        penalty = env.penalty(action_array[j])
+        print("TA nb:",j,", State:", la_array[j].state,", Action:", action_array[j], end = ' ')
+        action_count[action_array[j]] += 1
+
+        if penalty:
+            print("Penalty", end=' |')
+            la_array[j].penalize()
+        else:
+            print("Reward", end=' |')
+            la_array[j].reward()
+
+#  print("New State:", la.state)
+pl.plot(plot_result[0],plot_result[1])
+pl.show()
+
+
+print("#Action 1: ", action_count[0], "#Action 2:", action_count[1])
