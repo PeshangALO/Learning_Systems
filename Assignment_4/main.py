@@ -1,3 +1,4 @@
+from nltk import WordNetLemmatizer
 from sklearn.datasets import fetch_20newsgroups
 import math
 import enchant
@@ -10,6 +11,8 @@ d = enchant.Dict("en_US")
 
 # use the stem of the word
 ps = PorterStemmer()
+
+lemmatizer = WordNetLemmatizer()
 
 newsgroups_train = fetch_20newsgroups(subset='train')
 newsgroups_test = fetch_20newsgroups(subset='test')
@@ -41,6 +44,7 @@ def split_words(text_to_split):
         for word in each_text.lower().split():
             if word not in stop_words:
                 #word = ps.stem(word)
+                word = lemmatizer.lemmatize(word)
                 posts[categories[y_train_temp[count]]].append(word)
                 vocabulary[word] += 1
     return vocabulary, posts
